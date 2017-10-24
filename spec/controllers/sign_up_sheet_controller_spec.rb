@@ -66,8 +66,32 @@ describe SignUpSheetController do
   end
 
   describe '#list' do
+    let(:params) { { id: '1' } }
+    let(:bids) { [bid] }
+    let(:session){{user:student}}
     context 'when current assignment is intelligent assignment and has submission duedate (deadline_type_id 1)' do
-      it 'renders sign_up_sheet#intelligent_topic_selection page'
+      it 'renders sign_up_sheet#intelligent_topic_selection page' do
+        allow(SignUpTopic).to receive(:find_slots_filled).with(1).and_return(topic)
+        allow(SignUpTopic).to receive(:find_slots_waitlisted).with(1).and_return(topic)
+        allow(SignUpTopic).to receive(:where).with(assignment_id: assignment.id, private_to:nil).and_return([topic])
+        allow(assignment).to receive(:max_team_size).and_return(1)
+        allow(participant).to receive(:team).and_return(team)
+
+        allow(assignment).to receive(:is_intelligent).and_return(true)
+        allow(Bid).to receive(:where).with(team_id: team.try(:id)).and_return(bids)
+        allow(bids).to receive(:order).with(:priority).and_return(bids)
+        allow(SignUpTopic).to receive(:find_by).with(id: bid.topic_id).and_return(topic)
+
+        allow(assignment.due_dates).to receive(:find_by_deadline_type_id).with(7).and_return(nil)
+        allow(assignment.due_dates).to receive(:find_by_deadline_type_id).with(6).and_return(nil)
+        allow(assignment.due_dates).to receive(:find_by_deadline_type_id).with(1).and_return(due_date)
+
+        allow(assignment).to receive(:staggered_deadline).and_return(true)
+        allow(SignedUpTeam).to receive(:find_team_users).with(1,student.id).and_return([])
+
+        get :list, params,session
+        expect(response).to render_template(:intelligent_topic_selection)
+      end
     end
 
     context 'when current assignment is intelligent assignment and has submission duedate (deadline_type_id 1)' do
@@ -101,7 +125,7 @@ describe SignUpSheetController do
         it 'shows a flash error message and redirects to assignment#edit page'
       end
     end
-  end
+  end  #by Tian
 
   describe '#delete_signup' do
     context 'when either submitted files or hyperlinks of current team are not empty' do
