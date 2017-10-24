@@ -94,8 +94,12 @@ describe SignUpSheetController do
       end
     end
 
-    context 'when current assignment is intelligent assignment and has submission duedate (deadline_type_id 1)' do
+    context 'when current assignment is not intelligent assignment and has submission duedate (deadline_type_id 1)' do
       it 'renders sign_up_sheet#list page' do
+        allow(assignment).to receive(:is_intelligent).and_return(false)
+
+        get :list, params,session
+        expect(response).to render_template(:list)
       end
     end
   end
@@ -115,13 +119,16 @@ describe SignUpSheetController do
   end
 
   describe '#signup_as_instructor_action' do
+    let(:params) { { username: '1' } }
     context 'when user cannot be found' do
       it 'shows an flash error message and redirects to assignment#edit page' do
-
+        allow(User).to receive(:find_by).with(any_args).and_return(nil)
+        get :signup_as_instructor_action, params
+        expect(flash.now[:error]).to eq("That student does not exist!")
       end
     end
 
-    context 'when user cannot be found' do
+    context 'when user can be found' do
       context 'when an assignment_participant can be found' do
         context 'when creating team related objects successfully' do
           it 'shows a flash success message and redirects to assignment#edit page' do
@@ -136,7 +143,7 @@ describe SignUpSheetController do
         end
       end
 
-      context 'when an assignment_participant can be found' do
+      context 'when an assignment_participant cannot be found' do
         it 'shows a flash error message and redirects to assignment#edit page' do
 
         end
