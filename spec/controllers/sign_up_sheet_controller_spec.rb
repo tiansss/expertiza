@@ -95,34 +95,51 @@ describe SignUpSheetController do
     end
 
     context 'when current assignment is intelligent assignment and has submission duedate (deadline_type_id 1)' do
-      it 'renders sign_up_sheet#list page'
+      it 'renders sign_up_sheet#list page' do
+      end
     end
   end
 
   describe '#sign_up' do
+    let(:params) { { id: '1' } }
+    let(:session){{user:student}}
     context 'when SignUpSheet.signup_team method return nil' do
-      it 'shows an error flash message and redirects to sign_up_sheet#list page'
+      it 'shows an error flash message and redirects to sign_up_sheet#list page' do
+        SignUpSheet.signup_team(@assignment.id, @user_id, params[:topic_id])
+        allow(SignUpSheet).to receive(signup_team).with(any_args).and_return(nil)
+        get :sign_up, params,session
+        expect(response).to redirect_to action: 'list', id: params[:id]
+        expect(flash.now[:error]).to eq("You've already signed up for a topic!")
+      end
     end
   end
 
   describe '#signup_as_instructor_action' do
     context 'when user cannot be found' do
-      it 'shows an flash error message and redirects to assignment#edit page'
+      it 'shows an flash error message and redirects to assignment#edit page' do
+
+      end
     end
 
     context 'when user cannot be found' do
       context 'when an assignment_participant can be found' do
         context 'when creating team related objects successfully' do
-          it 'shows a flash success message and redirects to assignment#edit page'
+          it 'shows a flash success message and redirects to assignment#edit page' do
+
+          end
         end
 
         context 'when creating team related objects unsuccessfully' do
-          it 'shows a flash error message and redirects to assignment#edit page'
+          it 'shows a flash error message and redirects to assignment#edit page' do
+
+          end
         end
       end
 
       context 'when an assignment_participant can be found' do
-        it 'shows a flash error message and redirects to assignment#edit page'
+        it 'shows a flash error message and redirects to assignment#edit page' do
+
+        end
       end
     end
   end  #by Tian
