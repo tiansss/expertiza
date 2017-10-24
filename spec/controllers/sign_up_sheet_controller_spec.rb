@@ -132,19 +132,35 @@ describe SignUpSheetController do
       context 'when an assignment_participant can be found' do
         context 'when creating team related objects successfully' do
           it 'shows a flash success message and redirects to assignment#edit page' do
+            allow(User).to receive(:find_by).with(any_args).and_return(student)
+            allow(AssignmentParticipant).to receive(:exists?).with(any_args).and_return(true)
+            allow(SignUpSheet).to receive(:signup_team).with(any_args).and_return(signed_up_team)
 
+            get :signup_as_instructor_action
+            expect(flash.now[:success]).to eq("You have successfully signed up the student for the topic!")
           end
         end
 
         context 'when creating team related objects unsuccessfully' do
           it 'shows a flash error message and redirects to assignment#edit page' do
+            allow(User).to receive(:find_by).with(any_args).and_return(student)
+            allow(AssignmentParticipant).to receive(:exists?).with(any_args).and_return(true)
+            allow(SignUpSheet).to receive(:signup_team).with(any_args).and_return(nil)
 
+            get :signup_as_instructor_action
+            expect(flash.now[:error]).to eq("The student has already signed up for a topic!")
+            expect(response).to redirect_to controller: 'assignments', action: 'edit', id: params[:assignment_id]
           end
         end
       end
 
       context 'when an assignment_participant cannot be found' do
         it 'shows a flash error message and redirects to assignment#edit page' do
+          allow(User).to receive(:find_by).with(any_args).and_return(student)
+          allow(AssignmentParticipant).to receive(:exists?).with(any_args).and_return(false)
+          get :signup_as_instructor_action
+          expect(flash.now[:error]).to eq("The student is not registered for the assignment!")
+          expect(response).to redirect_to controller: 'assignments', action: 'edit', id: params[:assignment_id]
 
         end
       end
